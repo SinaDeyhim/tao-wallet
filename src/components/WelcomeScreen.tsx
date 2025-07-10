@@ -1,0 +1,50 @@
+import { Button } from "@/components/ui/button";
+import { Wallet, Plus, Download } from "lucide-react";
+
+interface WelcomeScreenProps {
+  onCreateWallet: () => void;
+  onImportWallet: () => void;
+}
+
+export default function WelcomeScreen({
+  onCreateWallet,
+  onImportWallet,
+}: WelcomeScreenProps) {
+  return (
+    <div className="h-full flex flex-col bg-gray-900 justify-between">
+      {/* Header */}
+      <div className="p-6 text-center border-b border-gray-800">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <Wallet className="w-5 h-5 text-white" />
+          </div>
+          <h1 className="text-xl font-bold text-white">Crucible</h1>
+        </div>
+        <p className="text-gray-400 text-sm">Secure & Smart Crypto Wallet</p>
+      </div>
+
+      {/* Features */}
+      <div className="p-6">
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <Button
+            onClick={onCreateWallet}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create New Wallet
+          </Button>
+
+          <Button
+            onClick={onImportWallet}
+            variant="outline"
+            className="w-full border-gray-600 text-gray-300 hover:bg-gray-800 py-3 rounded-xl font-medium bg-transparent"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Import Existing Wallet
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
