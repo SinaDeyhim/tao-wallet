@@ -12,22 +12,23 @@ import {
   EyeOff,
 } from "lucide-react";
 import type { WalletData } from "./LandingPage";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface WalletDashboardProps {
   walletData: WalletData;
-  onBack: () => void;
 }
 
-export default function WalletDashboard({
-  walletData,
-  onBack,
-}: WalletDashboardProps) {
+export default function WalletDashboard({ walletData }: WalletDashboardProps) {
   const [showBalance, setShowBalance] = useState(true);
   const [activeTab, setActiveTab] = useState<"assets" | "transactions">(
     "assets"
   );
-  const [balance, setBalance] = useState<string>(walletData?.balance || "0");
+  const [balance, setBalance] = useState<string | null>(null);
   const [usdPrice, setUsdPrice] = useState<number | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(true);
+  const [priceLoading, setPriceLoading] = useState(true);
+
+  const loading = balanceLoading || priceLoading;
 
   // Fetch TAO balance from chain
   useEffect(() => {
@@ -45,10 +46,8 @@ export default function WalletDashboard({
         const { data: balanceData } = await api.query.system.account(
           walletData?.address
         );
-
         const free = balanceData.free.toBigInt();
 
-        // Adjust decimals according to TAO token decimals (9 or 12, check your chain docs)
         const decimals = 9n;
         const divisor = 10n ** decimals;
 
@@ -63,19 +62,19 @@ export default function WalletDashboard({
       } catch (error) {
         console.error("Error fetching balance:", error);
         setBalance("0");
+      } finally {
+        setBalanceLoading(false);
       }
     }
 
     fetchBalance();
 
     return () => {
-      if (api) {
-        api.disconnect();
-      }
+      if (api) api.disconnect();
     };
   }, [walletData?.address]);
 
-  // Fetch TAO price in USD from Kraken
+  // Fetch TAO price
   useEffect(() => {
     async function fetchPrice() {
       try {
@@ -83,28 +82,26 @@ export default function WalletDashboard({
           "https://api.kraken.com/0/public/Ticker?pair=TAOUSD"
         );
         const data = await response.json();
-
         const pairKey = Object.keys(data.result)[0];
         const priceStr = data.result[pairKey].c[0];
-
         setUsdPrice(parseFloat(priceStr));
       } catch (error) {
         console.error("Error fetching TAO price:", error);
         setUsdPrice(null);
+      } finally {
+        setPriceLoading(false);
       }
     }
 
-    fetchPrice();
-
-    const interval = setInterval(fetchPrice, 60 * 1000); // refresh every minute
-
-    return () => clearInterval(interval);
-  }, []);
+    if (balance !== null) {
+      fetchPrice();
+    }
+  }, [balance]);
 
   const usdValueStr =
-    usdPrice && balance !== "0"
+    usdPrice !== null && balance !== null
       ? `$${(parseFloat(balance) * usdPrice).toFixed(2)}`
-      : "≈ $0 USD";
+      : null;
 
   const transactions = [
     {
@@ -134,20 +131,18 @@ export default function WalletDashboard({
   ];
 
   const copyAddress = () => {
-    if (walletData) {
+    if (walletData?.address) {
       navigator.clipboard.writeText(walletData.address);
     }
   };
 
   return (
     <div className="h-full flex flex-col bg-gray-900">
-      {/* Header */}
       <div className="p-4 border-b border-gray-800 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-white">Wallet</h1>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {/* Balance Section */}
         <div className="p-6 text-center border-b border-gray-800">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Button
@@ -162,28 +157,52 @@ export default function WalletDashboard({
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <h2 className="text-3xl font-bold text-white">
-              {showBalance ? `${balance} TAO` : "•••••••••"}
-            </h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowBalance(!showBalance)}
-              className="text-gray-400 hover:text-white w-8 h-8"
-            >
-              {showBalance ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-          <p className="text-gray-400 text-sm">
-            {showBalance ? usdValueStr : "••••••"}
-          </p>
+          {loading ? (
+            <div className="flex flex-col items-center gap-2 mb-2">
+              <Skeleton className="h-8 w-40 rounded bg-gray-700" />
+              <Skeleton className="h-4 w-20 rounded bg-gray-700" />
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h2 className="text-3xl font-bold text-white">
+                  {showBalance ? (
+                    balance !== null ? (
+                      `${balance} TAO`
+                    ) : (
+                      <Skeleton className="h-8 w-40 rounded bg-gray-700" />
+                    )
+                  ) : (
+                    "•••••••••"
+                  )}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowBalance(!showBalance)}
+                  className="text-gray-400 hover:text-white w-8 h-8"
+                >
+                  {showBalance ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-gray-400 text-sm">
+                {showBalance ? (
+                  usdValueStr !== null ? (
+                    usdValueStr
+                  ) : (
+                    <Skeleton className="h-4 w-20 rounded bg-gray-700" />
+                  )
+                ) : (
+                  "••••••"
+                )}
+              </p>
+            </>
+          )}
 
-          {/* Action Buttons */}
           <div className="flex gap-3 mt-6">
             <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
               <Send className="w-4 h-4 mr-2" />
@@ -199,7 +218,6 @@ export default function WalletDashboard({
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b border-gray-800">
           <Button
             variant="ghost"
@@ -225,7 +243,6 @@ export default function WalletDashboard({
           </Button>
         </div>
 
-        {/* Content */}
         <div className="p-4">
           {activeTab === "assets" && (
             <div className="space-y-3">
@@ -244,8 +261,20 @@ export default function WalletDashboard({
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-white">{balance} TAO</p>
-                      <p className="text-gray-400 text-sm">{usdValueStr}</p>
+                      <p className="font-semibold text-white">
+                        {loading ? (
+                          <Skeleton className="h-5 w-20 bg-gray-700 mb-1" />
+                        ) : (
+                          `${balance} TAO`
+                        )}
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        {loading ? (
+                          <Skeleton className="h-4 w-20 bg-gray-700" />
+                        ) : (
+                          usdValueStr
+                        )}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
