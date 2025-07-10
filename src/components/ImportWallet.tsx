@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,7 @@ export default function ImportWallet({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [blurred, setBlurred] = useState(false);
 
   const handleImport = async () => {
     setError(null);
@@ -74,6 +75,12 @@ export default function ImportWallet({
     }
   };
 
+  useEffect(() => {
+    if (!seedPhrase) {
+      setBlurred(false);
+    }
+  }, [seedPhrase]);
+
   return (
     <div className="h-full flex flex-col bg-gray-900">
       {/* Header */}
@@ -103,17 +110,43 @@ export default function ImportWallet({
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="seedPhrase" className="text-gray-300">
+              <Label
+                htmlFor="seedPhrase"
+                className="text-gray-300 flex justify-between items-center"
+              >
                 Seed Phrase
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-gray-400 hover:text-white"
+                  onClick={() => setBlurred(!blurred)}
+                >
+                  {blurred ? (
+                    <Eye className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                </Button>
               </Label>
+
               <Textarea
                 id="seedPhrase"
                 value={seedPhrase}
-                onChange={(e) => setSeedPhrase(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white mt-1 min-h-[120px]"
+                onChange={(e) => {
+                  setSeedPhrase(e.target.value);
+                  setBlurred(true);
+                }}
+                onPaste={() => {
+                  setBlurred(true);
+                }}
+                className={`bg-gray-800 border-gray-700 text-white mt-1 min-h-[120px] transition-all ${
+                  blurred ? "blur-sm select-none" : ""
+                }`}
                 placeholder="Enter your 12 or 24 word seed phrase separated by spaces"
                 disabled={loading}
               />
+
               <p className="text-gray-500 text-xs mt-1">
                 Words:{" "}
                 {seedPhrase.trim() ? seedPhrase.trim().split(/\s+/).length : 0}
