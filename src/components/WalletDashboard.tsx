@@ -12,12 +12,10 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import type { WalletData } from "./LandingPage";
 
 interface WalletDashboardProps {
-  walletData: {
-    address: string;
-    balance: string;
-  };
+  walletData: WalletData;
   onBack: () => void;
 }
 
@@ -29,12 +27,12 @@ export default function WalletDashboard({
   const [activeTab, setActiveTab] = useState<"assets" | "transactions">(
     "assets"
   );
-  const [balance, setBalance] = useState<string>(walletData.balance || "0");
+  const [balance, setBalance] = useState<string>(walletData?.balance || "0");
   const [usdPrice, setUsdPrice] = useState<number | null>(null);
 
   // Fetch TAO balance from chain
   useEffect(() => {
-    if (!walletData.address) return;
+    if (!walletData?.address) return;
 
     const wsProvider = new WsProvider(
       "wss://bittensor-finney.api.onfinality.io/public-ws"
@@ -46,7 +44,7 @@ export default function WalletDashboard({
         api = await ApiPromise.create({ provider: wsProvider });
 
         const { data: balanceData } = await api.query.system.account(
-          walletData.address
+          walletData?.address
         );
 
         const free = balanceData.free.toBigInt();
@@ -76,7 +74,7 @@ export default function WalletDashboard({
         api.disconnect();
       }
     };
-  }, [walletData.address]);
+  }, [walletData?.address]);
 
   // Fetch TAO price in USD from Kraken
   useEffect(() => {
@@ -138,7 +136,9 @@ export default function WalletDashboard({
   ];
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(walletData.address);
+    if (walletData) {
+      navigator.clipboard.writeText(walletData.address);
+    }
   };
 
   return (
@@ -146,13 +146,6 @@ export default function WalletDashboard({
       {/* Header */}
       <div className="p-4 border-b border-gray-800 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-white">Wallet</h1>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-gray-400 hover:text-white hover:bg-gray-800"
-        >
-          <Settings className="w-5 h-5" />
-        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -165,7 +158,8 @@ export default function WalletDashboard({
               onClick={copyAddress}
               className="text-gray-400 hover:text-white hover:bg-gray-800 text-xs"
             >
-              {walletData.address.slice(0, 6)}...{walletData.address.slice(-4)}
+              {walletData?.address.slice(0, 6)}...
+              {walletData?.address.slice(-4)}
               <Copy className="w-3 h-3 ml-1" />
             </Button>
           </div>

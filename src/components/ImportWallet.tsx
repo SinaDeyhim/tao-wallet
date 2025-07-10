@@ -49,9 +49,6 @@ export default function ImportWallet({
       return;
     }
 
-    //5CY79kUDbN2CFyr3CtgrS5nuNk1ZJ6m7kYcg5QpFeG8RRKam
-    //5CY79kUDbN2CFyr3CtgrS5nuNk1ZJ6m7kYcg5QpFeG8RRKam
-
     setLoading(true);
 
     try {

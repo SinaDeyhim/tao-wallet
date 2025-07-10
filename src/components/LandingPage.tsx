@@ -7,6 +7,8 @@ import ImportWallet from "./ImportWallet";
 import WalletDashboard from "./WalletDashboard";
 import { Button } from "@/components/ui/button";
 
+export type WalletData = { address: string; balance: string } | null;
+
 export default function WalletExtension() {
   const [currentView, setCurrentView] = useState<
     "welcome" | "create" | "import" | "dashboard"
@@ -15,7 +17,7 @@ export default function WalletExtension() {
     return (saved as any) || "welcome";
   });
 
-  const [walletData, setWalletData] = useState<unknown>(() => {
+  const [walletData, setWalletData] = useState<WalletData>(() => {
     const saved = localStorage.getItem("walletData");
     return saved ? JSON.parse(saved) : null;
   });
@@ -50,14 +52,14 @@ export default function WalletExtension() {
     localStorage.setItem("walletLocked", locked.toString());
   }, [locked]);
 
-  const handleWalletCreated = (data: unknown) => {
-    setWalletData(data);
+  const handleWalletCreated = (walletData: WalletData) => {
+    setWalletData(walletData);
     setCurrentView("dashboard");
     setLocked(false);
   };
 
-  const handleWalletImported = (data: unknown) => {
-    setWalletData(data);
+  const handleWalletImported = (walletData: WalletData) => {
+    setWalletData(walletData);
     setCurrentView("dashboard");
     setLocked(false);
   };
