@@ -21,16 +21,16 @@ export type WalletData = { address: string; balance: string } | null;
 
 export default function WalletExtension() {
   const [currentView, setCurrentView] = useState<View>("welcome");
-
   const [walletData, setWalletData] = useState<WalletData>(null);
   const [locked, setLocked] = useState<boolean>(true);
   const [unlockPassword, setUnlockPassword] = useState("");
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlockLoading, setUnlockLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Initial load from storage
   useEffect(() => {
     const initialize = async () => {
+      setIsLoading(true);
       const [storedView, storedWalletData, storedLockedState] =
         await Promise.all([
           getFromStorage("walletCurrentView"),
@@ -38,23 +38,45 @@ export default function WalletExtension() {
           getFromStorage("walletLocked"),
         ]);
 
+      let initialView: View = "welcome";
+      let initialLockedState: boolean = true;
+
       if (isWalletData(storedWalletData)) {
         setWalletData(storedWalletData);
+
+        if (storedView === "create" || storedView === "import") {
+          initialView = "dashboard";
+        } else if (isView(storedView)) {
+          initialView = storedView;
+        } else {
+          initialView = "dashboard";
+        }
+
+        if (storedLockedState === "false") {
+          initialLockedState = false;
+        } else {
+          initialLockedState = true;
+        }
+      } else {
+        initialLockedState = false;
+        if (isView(storedView)) {
+          initialView = storedView;
+        }
       }
-      if (isView(storedView)) {
-        setCurrentView(storedView);
-      }
-      if (storedLockedState === "false") setLocked(false);
+
+      setCurrentView(initialView);
+      setLocked(initialLockedState);
+      setIsLoading(false);
     };
 
     initialize();
   }, []);
 
-  // Keep view in storage
   useEffect(() => {
-    setToStorage("walletCurrentView", currentView);
-    console.log(">>>>", currentView);
-  }, [currentView]);
+    if (!isLoading) {
+      setToStorage("walletCurrentView", currentView);
+    }
+  }, [currentView, isLoading]);
 
   // Sync wallet data and lock state with storage
   useEffect(() => {
@@ -75,12 +97,12 @@ export default function WalletExtension() {
 
   const handleWalletCreate = (data: WalletData) => {
     setWalletData(data);
-    setCurrentView("create");
+    setCurrentView("dashboard");
   };
 
   const handleWalletImport = (data: WalletData) => {
     setWalletData(data);
-    setCurrentView("import");
+    setCurrentView("dashboard");
   };
 
   const backToWelcome = () => {
@@ -127,6 +149,15 @@ export default function WalletExtension() {
       setUnlockLoading(false);
     }
   };
+
+  // Display a loading screen while state is being initialized
+  if (isLoading) {
+    return (
+      <div className="w-[375px] h-[600px] bg-gray-900 text-white flex flex-col justify-center items-center p-6">
+        <p className="text-xl">Loading wallet state...</p>
+      </div>
+    );
+  }
 
   if (locked && walletData) {
     return (
