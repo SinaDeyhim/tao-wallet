@@ -104,7 +104,7 @@ export default function CreateWallet({
 
       // Generate mnemonic and keypair
       const mnemonic = mnemonicGenerate(12);
-      const keyring = new Keyring({ type: "sr25519", ss58Format: 22 });
+      const keyring = new Keyring({ type: "sr25519", ss58Format: 42 });
       const pair = keyring.addFromUri(mnemonic);
 
       setSeedPhrase(mnemonic.split(" "));

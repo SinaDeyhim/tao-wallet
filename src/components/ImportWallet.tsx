@@ -49,11 +49,14 @@ export default function ImportWallet({
       return;
     }
 
+    //5CY79kUDbN2CFyr3CtgrS5nuNk1ZJ6m7kYcg5QpFeG8RRKam
+    //5CY79kUDbN2CFyr3CtgrS5nuNk1ZJ6m7kYcg5QpFeG8RRKam
+
     setLoading(true);
 
     try {
       // Generate keypair from mnemonic
-      const keyring = new Keyring({ type: "sr25519", ss58Format: 22 });
+      const keyring = new Keyring({ type: "sr25519", ss58Format: 42 });
       const pair = keyring.addFromUri(trimmedSeed);
 
       // Hash and save password

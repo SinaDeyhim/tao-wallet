@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@polkadot/api": "^16.4.1",
     "@polkadot/keyring": "^13.5.3",
     "@polkadot/util-crypto": "^13.5.3",
     "@radix-ui/react-label": "^2.1.7",

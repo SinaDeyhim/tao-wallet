@@ -1,6 +1,5 @@
-// @ts-nocheck
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +14,10 @@ import {
 } from "lucide-react";
 
 interface WalletDashboardProps {
-  walletData: unknown;
+  walletData: {
+    address: string;
+    balance: string;
+  };
   onBack: () => void;
 }
 
@@ -27,6 +29,86 @@ export default function WalletDashboard({
   const [activeTab, setActiveTab] = useState<"assets" | "transactions">(
     "assets"
   );
+  const [balance, setBalance] = useState<string>(walletData.balance || "0");
+  const [usdPrice, setUsdPrice] = useState<number | null>(null);
+
+  // Fetch TAO balance from chain
+  useEffect(() => {
+    if (!walletData.address) return;
+
+    const wsProvider = new WsProvider(
+      "wss://bittensor-finney.api.onfinality.io/public-ws"
+    );
+    let api: ApiPromise;
+
+    async function fetchBalance() {
+      try {
+        api = await ApiPromise.create({ provider: wsProvider });
+
+        const { data: balanceData } = await api.query.system.account(
+          walletData.address
+        );
+
+        const free = balanceData.free.toBigInt();
+
+        // Adjust decimals according to TAO token decimals (9 or 12, check your chain docs)
+        const decimals = 9n;
+        const divisor = 10n ** decimals;
+
+        const whole = free / divisor;
+        const fraction = free % divisor;
+        const fractionStr = fraction
+          .toString()
+          .padStart(Number(decimals), "0")
+          .slice(0, 4);
+
+        setBalance(`${whole.toString()}.${fractionStr}`);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        setBalance("0");
+      }
+    }
+
+    fetchBalance();
+
+    return () => {
+      if (api) {
+        api.disconnect();
+      }
+    };
+  }, [walletData.address]);
+
+  // Fetch TAO price in USD from Kraken
+  useEffect(() => {
+    async function fetchPrice() {
+      try {
+        const response = await fetch(
+          "https://api.kraken.com/0/public/Ticker?pair=TAOUSD"
+        );
+        const data = await response.json();
+
+        const pairKey = Object.keys(data.result)[0];
+        const priceStr = data.result[pairKey].c[0];
+        console.log(">>>>>", priceStr);
+
+        setUsdPrice(parseFloat(priceStr));
+      } catch (error) {
+        console.error("Error fetching TAO price:", error);
+        setUsdPrice(null);
+      }
+    }
+
+    fetchPrice();
+
+    const interval = setInterval(fetchPrice, 60 * 1000); // refresh every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const usdValueStr =
+    usdPrice && balance !== "0"
+      ? `$${(parseFloat(balance) * usdPrice).toFixed(2)}`
+      : "≈ $0 USD";
 
   const transactions = [
     {
@@ -90,7 +172,7 @@ export default function WalletDashboard({
 
           <div className="flex items-center justify-center gap-2 mb-2">
             <h2 className="text-3xl font-bold text-white">
-              {showBalance ? `${walletData.balance} TAO` : "••••••"}
+              {showBalance ? `${balance} TAO` : "••••••"}
             </h2>
             <Button
               variant="ghost"
@@ -105,7 +187,9 @@ export default function WalletDashboard({
               )}
             </Button>
           </div>
-          <p className="text-gray-400 text-sm">≈ $0 USD</p>
+          <p className="text-gray-400 text-sm">
+            {showBalance ? usdValueStr : "••••••"}
+          </p>
 
           {/* Action Buttons */}
           <div className="flex gap-3 mt-6">
@@ -168,10 +252,8 @@ export default function WalletDashboard({
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-white">
-                        {walletData.balance} TAO
-                      </p>
-                      <p className="text-gray-400 text-sm">0</p>
+                      <p className="font-semibold text-white">{balance} TAO</p>
+                      <p className="text-gray-400 text-sm">{usdValueStr}</p>
                     </div>
                   </div>
                 </CardContent>
