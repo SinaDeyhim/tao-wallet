@@ -170,7 +170,7 @@ export default function ImportWallet({
               password.length < 8 ||
               loading
             }
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium"
+            className="w-full"
           >
             {loading ? "Importing..." : "Import Wallet"}
           </Button>

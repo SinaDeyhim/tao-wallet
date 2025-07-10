@@ -153,7 +153,7 @@ export default function CreateWallet({
         <h1 className="text-lg font-semibold text-white">Create Wallet</h1>
       </div>
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 overflow-y-auto p-6">
         {step === 1 && (
           <div className="space-y-6">
             <div className="text-center">
@@ -228,7 +228,7 @@ export default function CreateWallet({
             <Button
               onClick={handlePasswordSubmit}
               disabled={password.length < 8 || password !== confirmPassword}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium"
+              className="w-full"
             >
               Continue
             </Button>
@@ -271,9 +271,6 @@ export default function CreateWallet({
                       key={index}
                       className="bg-gray-700 p-2 rounded text-center text-sm text-gray-300"
                     >
-                      <span className="text-gray-500 text-xs">
-                        {index + 1}.
-                      </span>{" "}
                       {word}
                     </div>
                   ))}
@@ -290,7 +287,8 @@ export default function CreateWallet({
 
             <Button
               onClick={handleFinishSetup}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium"
+              variant="secondary"
+              className="w-full"
             >
               I've Saved My Seed Phrase
             </Button>

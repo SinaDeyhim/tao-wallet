@@ -29,7 +29,7 @@ export default function WelcomeScreen({
         <div className="space-y-3">
           <Button
             onClick={onCreateWallet}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium"
+            className="w-full bg-gradient-to-r from-indigo-700 via-blue-600 to-cyan-500 hover:from-indigo-600 hover:via-blue-500 hover:to-cyan-400"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create New Wallet
@@ -37,8 +37,8 @@ export default function WelcomeScreen({
 
           <Button
             onClick={onImportWallet}
-            variant="outline"
-            className="w-full border-gray-600 text-gray-300 hover:bg-gray-800 py-3 rounded-xl font-medium bg-transparent"
+            variant="secondary"
+            className="w-full hover:bg-gradient-to-r hover:from-gray-800 hover:via-gray-700 hover:to-gray-600"
           >
             <Download className="w-4 h-4 mr-2" />
             Import Existing Wallet

@@ -23,7 +23,6 @@ export default function WalletExtension() {
   // Lock state, default locked if no walletData or if user locked it explicitly
   const [locked, setLocked] = useState<boolean>(() => {
     const savedLocked = localStorage.getItem("walletLocked");
-    // Locked if user locked before or if no wallet data (not logged in)
     return savedLocked === "true" || walletData === null;
   });
 
@@ -38,12 +37,10 @@ export default function WalletExtension() {
   useEffect(() => {
     if (walletData) {
       localStorage.setItem("walletData", JSON.stringify(walletData));
-      // Unlock automatically if wallet data is set (new login)
       setLocked(false);
       localStorage.setItem("walletLocked", "false");
     } else {
       localStorage.removeItem("walletData");
-      // Lock if wallet data is removed (logout)
       setLocked(true);
       localStorage.setItem("walletLocked", "true");
     }
@@ -145,7 +142,7 @@ export default function WalletExtension() {
   return (
     <div className="w-[375px] h-[600px] bg-gray-900 text-white relative">
       {/* Lock button top-right */}
-      {currentView !== "welcome" && (
+      {currentView === "dashboard" && (
         <div className="absolute top-2 right-2 z-50">
           <Button
             size="sm"
