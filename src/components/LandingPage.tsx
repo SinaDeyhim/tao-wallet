@@ -14,6 +14,15 @@ export default function WalletExtension() {
     "welcome" | "create" | "import" | "dashboard"
   >(() => {
     const saved = localStorage.getItem("walletCurrentView");
+    const savedWalletData = localStorage.getItem("walletData");
+    if (
+      !savedWalletData &&
+      saved !== "welcome" &&
+      saved !== "create" &&
+      saved !== "import"
+    ) {
+      return "welcome";
+    }
     return (saved as any) || "welcome";
   });
 
@@ -22,7 +31,6 @@ export default function WalletExtension() {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Lock state, default locked if no walletData or if user locked it explicitly
   const [locked, setLocked] = useState<boolean>(() => {
     const savedLocked = localStorage.getItem("walletLocked");
     return savedLocked === "true" || walletData === null;
@@ -32,10 +40,12 @@ export default function WalletExtension() {
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlockLoading, setUnlockLoading] = useState(false);
 
+  // Effect to persist currentView
   useEffect(() => {
     localStorage.setItem("walletCurrentView", currentView);
   }, [currentView]);
 
+  // Effect to handle walletData changes (creation/import/logout)
   useEffect(() => {
     if (walletData) {
       localStorage.setItem("walletData", JSON.stringify(walletData));
@@ -43,26 +53,37 @@ export default function WalletExtension() {
       localStorage.setItem("walletLocked", "false");
     } else {
       localStorage.removeItem("walletData");
-      setLocked(true);
+
       localStorage.setItem("walletLocked", "true");
     }
   }, [walletData]);
 
+  // Effect to persist locked state explicitly
   useEffect(() => {
     localStorage.setItem("walletLocked", locked.toString());
   }, [locked]);
 
-  const handleWalletCreated = (walletData: WalletData) => {
-    setWalletData(walletData);
+  const handleWalletCreated = (data: WalletData) => {
+    setWalletData(data);
     setCurrentView("dashboard");
-    setLocked(false);
   };
 
-  const handleWalletImported = (walletData: WalletData) => {
-    setWalletData(walletData);
+  const handleWalletImported = (data: WalletData) => {
+    setWalletData(data);
     setCurrentView("dashboard");
-    setLocked(false);
   };
+
+  const handleLogout = () => {
+    setWalletData(null);
+    setCurrentView("welcome");
+    setUnlockPassword("");
+    setUnlockError(null);
+    localStorage.removeItem("walletPassword");
+  };
+
+  useEffect(() => {
+    console.log(">>>> locked", locked);
+  }, [locked]);
 
   const handleLock = () => {
     setLocked(true);
@@ -98,8 +119,7 @@ export default function WalletExtension() {
     }
   };
 
-  // Render Lock/Unlock overlay
-  if (locked) {
+  if (locked && walletData) {
     return (
       <div className="w-[375px] h-[600px] bg-gray-900 text-white flex flex-col justify-center items-center p-6">
         <h2 className="text-xl font-semibold mb-4">Unlock Wallet</h2>
@@ -126,12 +146,7 @@ export default function WalletExtension() {
 
         <Button
           variant="ghost"
-          onClick={() => {
-            setWalletData(null);
-            setCurrentView("welcome");
-            setLocked(false);
-            localStorage.removeItem("walletPassword");
-          }}
+          onClick={handleLogout}
           className="mt-4 text-gray-400 hover:text-white"
         >
           Logout
@@ -140,7 +155,6 @@ export default function WalletExtension() {
     );
   }
 
-  // Normal app UI with lock button visible
   return (
     <div className="w-[375px] h-[600px] bg-gray-900 text-white relative">
       {/* Lock button top-right */}
@@ -178,7 +192,12 @@ export default function WalletExtension() {
       {currentView === "dashboard" && (
         <WalletDashboard
           walletData={walletData}
-          onBack={() => setCurrentView("welcome")}
+          onBack={() => {
+            if (walletData) {
+              setLocked(true);
+            }
+            setCurrentView("welcome");
+          }}
         />
       )}
     </div>

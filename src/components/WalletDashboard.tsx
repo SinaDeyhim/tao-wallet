@@ -87,7 +87,6 @@ export default function WalletDashboard({
 
         const pairKey = Object.keys(data.result)[0];
         const priceStr = data.result[pairKey].c[0];
-        console.log(">>>>>", priceStr);
 
         setUsdPrice(parseFloat(priceStr));
       } catch (error) {
@@ -166,7 +165,7 @@ export default function WalletDashboard({
 
           <div className="flex items-center justify-center gap-2 mb-2">
             <h2 className="text-3xl font-bold text-white">
-              {showBalance ? `${balance} TAO` : "••••••"}
+              {showBalance ? `${balance} TAO` : "•••••••••"}
             </h2>
             <Button
               variant="ghost"
