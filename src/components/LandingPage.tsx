@@ -6,6 +6,7 @@ import WelcomeScreen from "./WelcomeScreen";
 import ImportWallet from "./ImportWallet";
 import WalletDashboard from "./WalletDashboard";
 import { Button } from "@/components/ui/button";
+import { Lock } from "lucide-react";
 
 export type WalletData = { address: string; balance: string } | null;
 
@@ -139,16 +140,12 @@ export default function WalletExtension() {
         <Button
           onClick={handleUnlock}
           disabled={unlockPassword.length === 0 || unlockLoading}
-          className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-medium"
+          className="w-full"
         >
           {unlockLoading ? "Unlocking..." : "Unlock"}
         </Button>
 
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-          className="mt-4 text-gray-400 hover:text-white"
-        >
+        <Button variant="ghost" onClick={handleLogout} className="mt-4 w-full">
           Logout
         </Button>
       </div>
@@ -164,9 +161,10 @@ export default function WalletExtension() {
             size="sm"
             variant="outline"
             onClick={handleLock}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 hover:text-white mt-1"
           >
             Lock
+            <Lock className="w-4 h-4 " />
           </Button>
         </div>
       )}

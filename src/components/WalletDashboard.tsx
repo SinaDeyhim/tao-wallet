@@ -8,7 +8,6 @@ import {
   Send,
   ArrowDownToLine,
   ArrowUpFromLine,
-  Settings,
   Eye,
   EyeOff,
 } from "lucide-react";
