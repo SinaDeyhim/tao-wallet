@@ -204,14 +204,11 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
           )}
 
           <div className="flex gap-3 mt-6">
-            <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
+            <Button className="flex-1">
               <Send className="w-4 h-4 mr-2" />
               Send
             </Button>
-            <Button
-              variant="outline"
-              className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800 rounded-xl bg-transparent"
-            >
+            <Button variant="outline" className="flex-1">
               <ArrowDownToLine className="w-4 h-4 mr-2" />
               Receive
             </Button>

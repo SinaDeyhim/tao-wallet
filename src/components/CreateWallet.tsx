@@ -1,9 +1,4 @@
-import { useEffect, useState } from "react";
-import {
-  getFromStorage,
-  setToStorage,
-  removeFromStorage,
-} from "@/utils/storage";
+import { useState } from "react";
 import { hashPassword } from "@/utils/password";
 import { mnemonicGenerate } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
@@ -13,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Eye, EyeOff, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { setToStorage } from "@/utils/storage";
+import { Loader2 } from "lucide-react";
 
 interface CreateWalletProps {
   onBack: () => void;
@@ -35,72 +32,16 @@ export default function CreateWallet({
   const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
   const [address, setAddress] = useState<string | null>(null);
   const [copiedSeed, setCopiedSeed] = useState(false);
-
-  // Initialize from storage except seed phrase
-  useEffect(() => {
-    const initialize = async () => {
-      const [
-        storedStep,
-        storedPassword,
-        storedConfirmPassword,
-        storedShowPassword,
-        storedShowConfirmPassword,
-        storedAddress,
-      ] = await Promise.all([
-        getFromStorage<number>("createWalletStep"),
-        getFromStorage<string>("createWalletPassword"),
-        getFromStorage<string>("createWalletConfirmPassword"),
-        getFromStorage<string>("createWalletShowPassword"),
-        getFromStorage<string>("createWalletShowConfirmPassword"),
-        getFromStorage<string>("createWalletAddress"),
-      ]);
-
-      if (storedStep) setStep(storedStep);
-      if (storedPassword) setPassword(storedPassword);
-      if (storedConfirmPassword) setConfirmPassword(storedConfirmPassword);
-      if (storedShowPassword === "true") setShowPassword(true);
-      if (storedShowConfirmPassword === "true") setShowConfirmPassword(true);
-      if (storedAddress) setAddress(storedAddress);
-    };
-
-    initialize();
-  }, []);
-
-  useEffect(() => {
-    setToStorage("createWalletStep", step);
-  }, [step]);
-
-  useEffect(() => {
-    setToStorage("createWalletPassword", password);
-  }, [password]);
-
-  useEffect(() => {
-    setToStorage("createWalletConfirmPassword", confirmPassword);
-  }, [confirmPassword]);
-
-  useEffect(() => {
-    setToStorage("createWalletShowPassword", showPassword.toString());
-  }, [showPassword]);
-
-  useEffect(() => {
-    setToStorage(
-      "createWalletShowConfirmPassword",
-      showConfirmPassword.toString()
-    );
-  }, [showConfirmPassword]);
-
-  // NOTE: Seed phrase is NOT saved to storage
-
-  useEffect(() => {
-    if (address) {
-      setToStorage("createWalletAddress", address);
-    } else {
-      removeFromStorage("createWalletAddress");
-    }
-  }, [address]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handlePasswordSubmit = async () => {
-    if (password.length >= 8 && password === confirmPassword) {
+    if (password.length < 8 || password !== confirmPassword) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
       const hashed = await hashPassword(password);
       await setToStorage("walletPassword", hashed);
 
@@ -111,6 +52,11 @@ export default function CreateWallet({
       setSeedPhrase(mnemonic.split(" "));
       setAddress(pair.address);
       setStep(2);
+    } catch (err) {
+      setError("Failed to create wallet. Please try again.");
+      console.error("Wallet creation failed:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -120,19 +66,8 @@ export default function CreateWallet({
     setTimeout(() => setCopiedSeed(false), 2000);
   };
 
-  const handleFinishSetup = async () => {
+  const handleFinishSetup = () => {
     if (!address) return;
-
-    // Clean up Chrome storage except seed phrase
-    await Promise.all([
-      removeFromStorage("createWalletStep"),
-      removeFromStorage("createWalletPassword"),
-      removeFromStorage("createWalletConfirmPassword"),
-      removeFromStorage("createWalletShowPassword"),
-      removeFromStorage("createWalletShowConfirmPassword"),
-      removeFromStorage("createWalletAddress"),
-    ]);
-
     onWalletCreated({
       address,
       seedPhrase: seedPhrase.join(" "),
@@ -226,12 +161,25 @@ export default function CreateWallet({
               </div>
             </div>
 
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
+
             <Button
               onClick={handlePasswordSubmit}
-              disabled={password.length < 8 || password !== confirmPassword}
-              className="w-full"
+              disabled={
+                isLoading || password.length < 8 || password !== confirmPassword
+              }
+              className="w-full flex items-center justify-center"
             >
-              Continue
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Wallet...
+                </>
+              ) : (
+                "Continue"
+              )}
             </Button>
           </div>
         )}
