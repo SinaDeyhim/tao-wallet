@@ -1,14 +1,18 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  getFromStorage,
+  setToStorage,
+  removeFromStorage,
+} from "@/utils/storage";
+import { hashPassword } from "@/utils/password";
+import { mnemonicGenerate } from "@polkadot/util-crypto";
+import { Keyring } from "@polkadot/keyring";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Eye, EyeOff, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { hashPassword } from "@/utils/password";
-
-import { mnemonicGenerate } from "@polkadot/util-crypto";
-import { Keyring } from "@polkadot/keyring";
 
 interface CreateWalletProps {
   onBack: () => void;
@@ -23,93 +27,89 @@ export default function CreateWallet({
   onBack,
   onWalletCreated,
 }: CreateWalletProps) {
-  // Load state from localStorage or fallback to defaults
-  const [step, setStep] = useState<number>(() => {
-    const saved = localStorage.getItem("createWalletStep");
-    return saved ? Number(saved) : 1;
-  });
-
-  const [password, setPassword] = useState<string>(() => {
-    return localStorage.getItem("createWalletPassword") || "";
-  });
-
-  const [confirmPassword, setConfirmPassword] = useState<string>(() => {
-    return localStorage.getItem("createWalletConfirmPassword") || "";
-  });
-
-  const [showPassword, setShowPassword] = useState<boolean>(() => {
-    const saved = localStorage.getItem("createWalletShowPassword");
-    return saved === "true";
-  });
-
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(
-    () => {
-      const saved = localStorage.getItem("createWalletShowConfirmPassword");
-      return saved === "true";
-    }
-  );
-
-  const [seedPhrase, setSeedPhrase] = useState<string[]>(() => {
-    const saved = localStorage.getItem("createWalletSeedPhrase");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [address, setAddress] = useState<string | null>(() => {
-    return localStorage.getItem("createWalletAddress");
-  });
-
+  const [step, setStep] = useState(1);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
+  const [address, setAddress] = useState<string | null>(null);
   const [copiedSeed, setCopiedSeed] = useState(false);
 
-  // Save step
+  // Initialize from storage except seed phrase
   useEffect(() => {
-    localStorage.setItem("createWalletStep", step.toString());
+    const initialize = async () => {
+      const [
+        storedStep,
+        storedPassword,
+        storedConfirmPassword,
+        storedShowPassword,
+        storedShowConfirmPassword,
+        storedAddress,
+      ] = await Promise.all([
+        getFromStorage<number>("createWalletStep"),
+        getFromStorage<string>("createWalletPassword"),
+        getFromStorage<string>("createWalletConfirmPassword"),
+        getFromStorage<string>("createWalletShowPassword"),
+        getFromStorage<string>("createWalletShowConfirmPassword"),
+        getFromStorage<string>("createWalletAddress"),
+      ]);
+
+      if (storedStep) setStep(storedStep);
+      if (storedPassword) setPassword(storedPassword);
+      if (storedConfirmPassword) setConfirmPassword(storedConfirmPassword);
+      if (storedShowPassword === "true") setShowPassword(true);
+      if (storedShowConfirmPassword === "true") setShowConfirmPassword(true);
+      if (storedAddress) setAddress(storedAddress);
+    };
+
+    initialize();
+  }, []);
+
+  useEffect(() => {
+    setToStorage("createWalletStep", step);
   }, [step]);
 
-  // Save password (WARNING: consider security for production!)
   useEffect(() => {
-    localStorage.setItem("createWalletPassword", password);
+    setToStorage("createWalletPassword", password);
   }, [password]);
 
   useEffect(() => {
-    localStorage.setItem("createWalletConfirmPassword", confirmPassword);
+    setToStorage("createWalletConfirmPassword", confirmPassword);
   }, [confirmPassword]);
 
   useEffect(() => {
-    localStorage.setItem("createWalletShowPassword", showPassword.toString());
+    setToStorage("createWalletShowPassword", showPassword.toString());
   }, [showPassword]);
 
   useEffect(() => {
-    localStorage.setItem(
+    setToStorage(
       "createWalletShowConfirmPassword",
       showConfirmPassword.toString()
     );
   }, [showConfirmPassword]);
 
-  useEffect(() => {
-    localStorage.setItem("createWalletSeedPhrase", JSON.stringify(seedPhrase));
-  }, [seedPhrase]);
+  // NOTE: Seed phrase is NOT saved to storage
 
   useEffect(() => {
     if (address) {
-      localStorage.setItem("createWalletAddress", address);
+      setToStorage("createWalletAddress", address);
     } else {
-      localStorage.removeItem("createWalletAddress");
+      removeFromStorage("createWalletAddress");
     }
   }, [address]);
 
   const handlePasswordSubmit = async () => {
     if (password.length >= 8 && password === confirmPassword) {
       const hashed = await hashPassword(password);
-      localStorage.setItem("walletPassword", hashed);
+      await setToStorage("walletPassword", hashed);
 
-      // Generate mnemonic and keypair
       const mnemonic = mnemonicGenerate(12);
       const keyring = new Keyring({ type: "sr25519", ss58Format: 42 });
       const pair = keyring.addFromUri(mnemonic);
 
       setSeedPhrase(mnemonic.split(" "));
       setAddress(pair.address);
-
       setStep(2);
     }
   };
@@ -120,22 +120,23 @@ export default function CreateWallet({
     setTimeout(() => setCopiedSeed(false), 2000);
   };
 
-  const handleFinishSetup = () => {
+  const handleFinishSetup = async () => {
     if (!address) return;
 
-    // Clear localStorage for sensitive info after finishing setup
-    localStorage.removeItem("createWalletStep");
-    localStorage.removeItem("createWalletPassword");
-    localStorage.removeItem("createWalletConfirmPassword");
-    localStorage.removeItem("createWalletShowPassword");
-    localStorage.removeItem("createWalletShowConfirmPassword");
-    localStorage.removeItem("createWalletSeedPhrase");
-    localStorage.removeItem("createWalletAddress");
+    // Clean up Chrome storage except seed phrase
+    await Promise.all([
+      removeFromStorage("createWalletStep"),
+      removeFromStorage("createWalletPassword"),
+      removeFromStorage("createWalletConfirmPassword"),
+      removeFromStorage("createWalletShowPassword"),
+      removeFromStorage("createWalletShowConfirmPassword"),
+      removeFromStorage("createWalletAddress"),
+    ]);
 
     onWalletCreated({
       address,
       seedPhrase: seedPhrase.join(" "),
-      balance: "0.00", // placeholder
+      balance: "0.00",
     });
   };
 

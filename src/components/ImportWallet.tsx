@@ -8,6 +8,7 @@ import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Keyring } from "@polkadot/keyring";
 import { mnemonicValidate } from "@polkadot/util-crypto";
 import { hashPassword } from "@/utils/password";
+import { setToStorage } from "@/utils/storage";
 
 interface ImportWalletProps {
   onBack: () => void;
@@ -56,15 +57,15 @@ export default function ImportWallet({
       const keyring = new Keyring({ type: "sr25519", ss58Format: 42 });
       const pair = keyring.addFromUri(trimmedSeed);
 
-      // Hash and save password
+      // Hash and store password securely
       const hashed = await hashPassword(password);
-      localStorage.setItem("walletPassword", hashed);
+      await setToStorage("walletPassword", hashed);
 
-      // Call back with wallet data
+      // Send wallet info to parent
       onWalletImported({
         address: pair.address,
         seedPhrase: trimmedSeed,
-        balance: "0.00", // placeholder; you can fetch real balance later
+        balance: "0.00",
       });
     } catch (e) {
       setError("Failed to import wallet. Please check your seed phrase.");

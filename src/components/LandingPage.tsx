@@ -7,84 +7,93 @@ import ImportWallet from "./ImportWallet";
 import WalletDashboard from "./WalletDashboard";
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
+import {
+  getFromStorage,
+  setToStorage,
+  removeFromStorage,
+  isWalletData,
+  isView,
+} from "@/utils/storage";
+
+export type View = "welcome" | "create" | "import" | "dashboard";
 
 export type WalletData = { address: string; balance: string } | null;
 
 export default function WalletExtension() {
-  const [currentView, setCurrentView] = useState<
-    "welcome" | "create" | "import" | "dashboard"
-  >(() => {
-    const saved = localStorage.getItem("walletCurrentView");
-    const savedWalletData = localStorage.getItem("walletData");
-    if (
-      !savedWalletData &&
-      saved !== "welcome" &&
-      saved !== "create" &&
-      saved !== "import"
-    ) {
-      return "welcome";
-    }
-    return (saved as any) || "welcome";
-  });
+  const [currentView, setCurrentView] = useState<View>("welcome");
 
-  const [walletData, setWalletData] = useState<WalletData>(() => {
-    const saved = localStorage.getItem("walletData");
-    return saved ? JSON.parse(saved) : null;
-  });
-
-  const [locked, setLocked] = useState<boolean>(() => {
-    const savedLocked = localStorage.getItem("walletLocked");
-    return savedLocked === "true" || walletData === null;
-  });
-
+  const [walletData, setWalletData] = useState<WalletData>(null);
+  const [locked, setLocked] = useState<boolean>(true);
   const [unlockPassword, setUnlockPassword] = useState("");
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlockLoading, setUnlockLoading] = useState(false);
 
-  // Effect to persist currentView
+  // Initial load from storage
   useEffect(() => {
-    localStorage.setItem("walletCurrentView", currentView);
+    const initialize = async () => {
+      const [storedView, storedWalletData, storedLockedState] =
+        await Promise.all([
+          getFromStorage("walletCurrentView"),
+          getFromStorage("walletData"),
+          getFromStorage("walletLocked"),
+        ]);
+
+      if (isWalletData(storedWalletData)) {
+        setWalletData(storedWalletData);
+      }
+      if (isView(storedView)) {
+        setCurrentView(storedView);
+      }
+      if (storedLockedState === "false") setLocked(false);
+    };
+
+    initialize();
+  }, []);
+
+  // Keep view in storage
+  useEffect(() => {
+    setToStorage("walletCurrentView", currentView);
+    console.log(">>>>", currentView);
   }, [currentView]);
 
-  // Effect to handle walletData changes (creation/import/logout)
+  // Sync wallet data and lock state with storage
   useEffect(() => {
     if (walletData) {
-      localStorage.setItem("walletData", JSON.stringify(walletData));
+      setToStorage("walletData", walletData);
       setLocked(false);
-      localStorage.setItem("walletLocked", "false");
+      setToStorage("walletLocked", "false");
     } else {
-      localStorage.removeItem("walletData");
-
-      localStorage.setItem("walletLocked", "true");
+      removeFromStorage("walletData");
+      setLocked(true);
+      setToStorage("walletLocked", "true");
     }
   }, [walletData]);
 
-  // Effect to persist locked state explicitly
   useEffect(() => {
-    localStorage.setItem("walletLocked", locked.toString());
+    setToStorage("walletLocked", locked.toString());
   }, [locked]);
 
-  const handleWalletCreated = (data: WalletData) => {
+  const handleWalletCreate = (data: WalletData) => {
     setWalletData(data);
-    setCurrentView("dashboard");
+    setCurrentView("create");
   };
 
-  const handleWalletImported = (data: WalletData) => {
+  const handleWalletImport = (data: WalletData) => {
     setWalletData(data);
-    setCurrentView("dashboard");
+    setCurrentView("import");
   };
 
-  const handleLogout = () => {
+  const backToWelcome = () => {
+    setCurrentView("welcome");
+  };
+
+  const handleLogout = async () => {
     setWalletData(null);
     setCurrentView("welcome");
     setUnlockPassword("");
     setUnlockError(null);
-    localStorage.removeItem("walletPassword");
+    await removeFromStorage("walletPassword");
   };
-
-  useEffect(() => {
-    console.log(">>>> locked", locked);
-  }, [locked]);
 
   const handleLock = () => {
     setLocked(true);
@@ -97,16 +106,15 @@ export default function WalletExtension() {
     setUnlockError(null);
 
     try {
-      const savedHash = localStorage.getItem("walletPassword");
-      if (!savedHash) {
+      const storedPasswordHash = await getFromStorage("walletPassword");
+      if (!storedPasswordHash) {
         setUnlockError("No password set.");
         setUnlockLoading(false);
         return;
       }
 
       const enteredHash = await hashPassword(unlockPassword);
-
-      if (enteredHash === savedHash) {
+      if (enteredHash === storedPasswordHash) {
         setLocked(false);
         setUnlockPassword("");
         setUnlockError(null);
@@ -154,7 +162,6 @@ export default function WalletExtension() {
 
   return (
     <div className="w-[375px] h-[600px] bg-gray-900 text-white relative">
-      {/* Lock button top-right */}
       {currentView === "dashboard" && (
         <div className="absolute top-2 right-2 z-50">
           <Button
@@ -164,7 +171,7 @@ export default function WalletExtension() {
             className="text-gray-400 hover:text-white mt-1"
           >
             Lock
-            <Lock className="w-4 h-4 " />
+            <Lock className="w-4 h-4 ml-2" />
           </Button>
         </div>
       )}
@@ -177,23 +184,21 @@ export default function WalletExtension() {
       )}
       {currentView === "create" && (
         <CreateWallet
-          onBack={() => setCurrentView("welcome")}
-          onWalletCreated={handleWalletCreated}
+          onBack={backToWelcome}
+          onWalletCreated={handleWalletCreate}
         />
       )}
       {currentView === "import" && (
         <ImportWallet
-          onBack={() => setCurrentView("welcome")}
-          onWalletImported={handleWalletImported}
+          onBack={backToWelcome}
+          onWalletImported={handleWalletImport}
         />
       )}
       {currentView === "dashboard" && (
         <WalletDashboard
           walletData={walletData}
           onBack={() => {
-            if (walletData) {
-              setLocked(true);
-            }
+            if (walletData) setLocked(true);
             setCurrentView("welcome");
           }}
         />
