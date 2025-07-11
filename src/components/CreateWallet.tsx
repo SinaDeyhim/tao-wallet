@@ -61,9 +61,21 @@ export default function CreateWallet({
   };
 
   const handleCopySeed = () => {
-    navigator.clipboard.writeText(seedPhrase.join(" "));
+    const phrase = seedPhrase.join(" ");
+    navigator.clipboard.writeText(phrase);
     setCopiedSeed(true);
-    setTimeout(() => setCopiedSeed(false), 2000);
+
+    // Clear clipboard after 30 seconds
+    setTimeout(async () => {
+      try {
+        await navigator.clipboard.writeText("");
+        console.info("Clipboard cleared for security.");
+      } catch (err) {
+        console.warn("Failed to clear clipboard:", err);
+      } finally {
+        setCopiedSeed(false);
+      }
+    }, 30_000);
   };
 
   const handleFinishSetup = () => {
@@ -226,6 +238,12 @@ export default function CreateWallet({
                 </div>
               </CardContent>
             </Card>
+
+            {copiedSeed && (
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                Seed phrase will be cleared from clipboard in 30s.
+              </p>
+            )}
 
             <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-4">
               <p className="text-yellow-400 text-sm">
