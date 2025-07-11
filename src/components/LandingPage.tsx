@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { hashPassword } from "@/utils/password";
+import { hashPassword, verifyPassword } from "@/utils/password";
 
 import CreateWallet from "./CreateWallet";
 import WelcomeScreen from "./WelcomeScreen";
@@ -128,22 +128,27 @@ export default function WalletExtension() {
     setUnlockError(null);
 
     try {
-      const storedPasswordHash = await getFromStorage("walletPassword");
+      const storedPasswordHash = (await getFromStorage(
+        "walletPassword"
+      )) as string;
       if (!storedPasswordHash) {
         setUnlockError("No password set.");
         setUnlockLoading(false);
         return;
       }
 
-      const enteredHash = await hashPassword(unlockPassword);
-      if (enteredHash === storedPasswordHash) {
+      const isPasswordCorrect = await verifyPassword(
+        unlockPassword,
+        storedPasswordHash
+      );
+      if (isPasswordCorrect) {
         setLocked(false);
         setUnlockPassword("");
         setUnlockError(null);
       } else {
-        setUnlockError("Incorrect password.");
+        setUnlockError("Authentication failed.");
       }
-    } catch (e) {
+    } catch {
       setUnlockError("Error verifying password.");
     } finally {
       setUnlockLoading(false);

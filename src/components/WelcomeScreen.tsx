@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Wallet, Plus, Download } from "lucide-react";
+import LandingAnimation from "./LandingAnimation";
 
 interface WelcomeScreenProps {
   onCreateWallet: () => void;
@@ -15,15 +16,15 @@ export default function WelcomeScreen({
       {/* Header */}
       <div className="p-6 text-center border-b border-gray-800">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Wallet className="w-5 h-5 text-white" />
+          <h1 className="text-2xl font-bold text-gray-200">Crucible</h1>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <Wallet className="w-6 h-6 text-gray-300 " />
           </div>
-          <h1 className="text-xl font-bold text-white">Crucible</h1>
         </div>
         <p className="text-gray-400 text-sm">Secure & Smart Crypto Wallet</p>
       </div>
 
-      {/* Features */}
+      <LandingAnimation />
       <div className="p-6">
         {/* Action Buttons */}
         <div className="space-y-3">
