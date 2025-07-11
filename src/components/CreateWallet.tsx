@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { hashPassword } from "@/utils/password";
+import { hashPassword, isValidPassword } from "@/utils/password";
 import { mnemonicGenerate } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 
@@ -36,7 +36,10 @@ export default function CreateWallet({
   const [error, setError] = useState<string | null>(null);
 
   const handlePasswordSubmit = async () => {
-    if (password.length < 8 || password !== confirmPassword) return;
+    if (!isValidPassword(password) || password !== confirmPassword) {
+      setError("Password does not meet requirements or does not match.");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -114,7 +117,7 @@ export default function CreateWallet({
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="password" className="text-gray-300">
+                <Label htmlFor="password" className="text-gray-300 pb-1">
                   Password
                 </Label>
                 <div className="relative mt-1">
@@ -124,12 +127,12 @@ export default function CreateWallet({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="bg-gray-800 border-gray-700 text-white pr-10 text-sm"
-                    placeholder="Enter password (min 8 characters)"
+                    placeholder="Enter password"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    className="absolute right-1 top-1/4 w-4 h-4 text-gray-400 hover:text-white"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 hover:text-white focus:outline-none focus:ring-0"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -139,10 +142,40 @@ export default function CreateWallet({
                     )}
                   </Button>
                 </div>
+                <div className="text-xs text-gray-400 mt-1 space-y-1 flex flex-col items-start">
+                  <p className="pt-3 pb-1">Password requirements:</p>
+                  <ul className="list-disc list-insid flex flex-col items-start ml-4">
+                    <li
+                      className={/[A-Z]/.test(password) ? "text-green-400" : ""}
+                    >
+                      At least one uppercase letter
+                    </li>
+                    <li
+                      className={/[a-z]/.test(password) ? "text-green-400" : ""}
+                    >
+                      At least one lowercase letter
+                    </li>
+                    <li className={/\d/.test(password) ? "text-green-400" : ""}>
+                      At least one number
+                    </li>
+                    <li
+                      className={
+                        /[^A-Za-z0-9]/.test(password) ? "text-green-400" : ""
+                      }
+                    >
+                      At least one special character
+                    </li>
+                    <li
+                      className={password.length >= 8 ? "text-green-400" : ""}
+                    >
+                      Minimum 8 characters
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword" className="text-gray-300">
+                <Label htmlFor="confirmPassword" className="text-gray-300 pb-1">
                   Confirm Password
                 </Label>
                 <div className="relative mt-1">
@@ -157,7 +190,7 @@ export default function CreateWallet({
                   <Button
                     type="button"
                     variant="ghost"
-                    className="absolute right-1 top-1/4 w-4 h-4 text-gray-400 hover:text-white"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 hover:text-white focus:outline-none focus:ring-0"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
@@ -176,9 +209,7 @@ export default function CreateWallet({
 
             <Button
               onClick={handlePasswordSubmit}
-              disabled={
-                isLoading || password.length < 8 || password !== confirmPassword
-              }
+              disabled={isLoading}
               className="w-full flex items-center justify-center"
             >
               {isLoading ? (

@@ -36,3 +36,16 @@ export async function verifyPassword(
     return false;
   }
 }
+
+/**
+ * Validates a password against complexity requirements:
+ * - Min 8 characters
+ * - At least 1 uppercase, 1 lowercase, 1 number, and 1 special character
+ * @param password The password to validate
+ * @returns true if valid, false otherwise
+ */
+export function isValidPassword(password: string): boolean {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+  return regex.test(password);
+}
