@@ -7,7 +7,7 @@ This is a demo app for creating or importing a TAO wallet on the Bittensor netwo
 ## 🚀 Setup
 
 1. **Download the extension folder**  
-   Make sure you have the complete extension files (including `manifest.json`).
+   Make sure you have the complete extension files (including `manifest.json`). [Link](https://drive.google.com/drive/folders/1DOpcUYAJeEPUaTig_XEN3WgzFKEA2q2_?usp=drive_link)
 
 2. **Open Chrome (or a Chromium-based browser)**
 
@@ -31,6 +31,10 @@ This is a demo app for creating or importing a TAO wallet on the Bittensor netwo
 
 
 ## 💅 UI Screenshots
+
+### Recordings
+[Create Wallet (Seed phrase shown for demo purposes — this is a burn wallet)](https://drive.google.com/file/d/1p_SQ7OEPEu-92HvFNKysco59_moVwumB/view?usp=drive_link)
+[Import Wallet](https://drive.google.com/file/d/1nK6Sk9KWepY9J9ZjtzaVlWRvX0nUsVCa/view?usp=drive_link)
 
 ### Landing Page
 <img width="377" height="605" alt="Screenshot 2025-07-11 at 9 02 25 AM" src="https://github.com/user-attachments/assets/50add583-65f6-49be-a3a3-75c281ca562e" />
