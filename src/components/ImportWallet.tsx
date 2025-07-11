@@ -140,7 +140,7 @@ export default function ImportWallet({
                 onPaste={() => {
                   setBlurred(true);
                 }}
-                className={`bg-gray-800 border-gray-700 text-white mt-1 min-h-[120px] transition-all ${
+                className={`bg-gray-800 border-gray-700 text-white mt-1 min-h-[120px] transition-all text-sm ${
                   blurred ? "blur-sm select-none" : ""
                 }`}
                 placeholder="Enter your 12 or 24 word seed phrase separated by spaces"
@@ -163,7 +163,7 @@ export default function ImportWallet({
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white pr-10"
+                  className="bg-gray-800 border-gray-700 text-white pr-10 text-sm"
                   placeholder="Create a new password (min 8 characters)"
                   disabled={loading}
                 />
@@ -176,9 +176,9 @@ export default function ImportWallet({
                   disabled={loading}
                 >
                   {showPassword ? (
-                    <EyeOff className="w-4 h-4 mr-1" />
+                    <EyeOff className="w-4 h-4" />
                   ) : (
-                    <Eye className="w-4 h-4 mr-1" />
+                    <Eye className="w-4 h-4" />
                   )}
                 </Button>
               </div>

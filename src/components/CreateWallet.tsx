@@ -92,7 +92,6 @@ export default function CreateWallet({
       <div className="p-4 border-b border-gray-800 flex items-center gap-3">
         <Button
           variant="ghost"
-          size="icon"
           onClick={onBack}
           className="text-gray-400 hover:text-white hover:bg-gray-800"
         >
@@ -124,20 +123,19 @@ export default function CreateWallet({
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-gray-800 border-gray-700 text-white pr-10"
+                    className="bg-gray-800 border-gray-700 text-white pr-10 text-sm"
                     placeholder="Enter password (min 8 characters)"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
                     className="absolute right-1 top-1/4 w-4 h-4 text-gray-400 hover:text-white"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="w-4 h-4 mr-1" />
+                      <EyeOff className="w-4 h-4" />
                     ) : (
-                      <Eye className="w-4 h-4 mr-1" />
+                      <Eye className="w-4 h-4" />
                     )}
                   </Button>
                 </div>
@@ -153,20 +151,19 @@ export default function CreateWallet({
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-gray-800 border-gray-700 text-white pr-10"
+                    className="bg-gray-800 border-gray-700 text-white pr-10 text-sm"
                     placeholder="Confirm your password"
                   />
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
                     className="absolute right-1 top-1/4 w-4 h-4 text-gray-400 hover:text-white"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="w-4 h-4 mr-1" />
+                      <EyeOff className="w-4 h-4" />
                     ) : (
-                      <Eye className="w-4 h-4 mr-1" />
+                      <Eye className="w-4 h-4" />
                     )}
                   </Button>
                 </div>
