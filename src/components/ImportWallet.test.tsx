@@ -175,6 +175,7 @@ describe("ImportWallet", () => {
     fireEvent.change(passwordInput, { target: { value: "password123" } });
 
     // Mock hashPassword to delay so loading=true persists
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     let resolveHash: Function;
     (passwordUtils.hashPassword as jest.Mock).mockImplementation(
       () =>
@@ -190,6 +191,7 @@ describe("ImportWallet", () => {
     expect(importButton).toBeDisabled();
 
     // Resolve hash to finish loading
+    // @ts-ignore
     resolveHash("hashed-pwd");
     await waitFor(() => {
       expect(importButton).not.toBeDisabled();

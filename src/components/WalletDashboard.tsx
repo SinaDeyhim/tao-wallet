@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface WalletDashboardProps {
   walletData: WalletData;
+  onBack: () => void;
 }
 
 export default function WalletDashboard({ walletData }: WalletDashboardProps) {
@@ -42,6 +43,7 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
       try {
         api = await ApiPromise.create({ provider: wsProvider });
 
+        // @ts-ignore
         const { data: balanceData } = await api.query.system.account(
           walletData?.address
         );

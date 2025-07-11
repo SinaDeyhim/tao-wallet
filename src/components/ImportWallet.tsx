@@ -32,12 +32,10 @@ export default function ImportWallet({
   const [blurred, setBlurred] = useState(false);
 
   const handleImport = async () => {
-    console.log(">>>>>>>>>");
     setError(null);
     const trimmedSeed = seedPhrase.trim().toLowerCase();
     const words = trimmedSeed.split(/\s+/);
 
-    console.log(">>>>>>>>>", words.length);
     if (words.length !== 12 && words.length !== 24) {
       setError("Seed phrase must be 12 or 24 words.");
       return;
@@ -67,7 +65,7 @@ export default function ImportWallet({
         seedPhrase: trimmedSeed,
         balance: "0.00",
       });
-    } catch (e) {
+    } catch {
       setError("Failed to import wallet. Please check your seed phrase.");
     } finally {
       setLoading(false);

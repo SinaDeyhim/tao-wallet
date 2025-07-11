@@ -8,5 +8,8 @@
   },
   "permissions": [
     "storage"  
-  ]
+  ],
+  "content_security_policy": {
+  "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' https://api.kraken.com wss://bittensor-finney.api.onfinality.io; object-src 'self'"
+  }
 }
