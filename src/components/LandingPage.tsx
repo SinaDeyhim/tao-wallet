@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { hashPassword, verifyPassword } from "@/utils/password";
+import { verifyPassword } from "@/utils/password";
 
 import CreateWallet from "./CreateWallet";
 import WelcomeScreen from "./WelcomeScreen";
@@ -19,7 +19,7 @@ export type View = "welcome" | "create" | "import" | "dashboard";
 
 export type WalletData = { address: string; balance: string } | null;
 
-export default function WalletExtension() {
+export default function LandingPage() {
   const [currentView, setCurrentView] = useState<View>("welcome");
   const [walletData, setWalletData] = useState<WalletData>(null);
   const [locked, setLocked] = useState<boolean>(true);

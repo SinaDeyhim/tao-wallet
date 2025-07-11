@@ -10,6 +10,7 @@ import { ArrowLeft, Eye, EyeOff, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { setToStorage } from "@/utils/storage";
 import { Loader2 } from "lucide-react";
+import { PasswordChecklist } from "@/components/PasswordCheck";
 
 interface CreateWalletProps {
   onBack: () => void;
@@ -97,6 +98,7 @@ export default function CreateWallet({
           variant="ghost"
           onClick={onBack}
           className="text-gray-400 hover:text-white hover:bg-gray-800"
+          aria-label="back"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
@@ -134,6 +136,9 @@ export default function CreateWallet({
                     variant="ghost"
                     className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 hover:text-white focus:outline-none focus:ring-0"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -142,36 +147,7 @@ export default function CreateWallet({
                     )}
                   </Button>
                 </div>
-                <div className="text-xs text-gray-400 mt-1 space-y-1 flex flex-col items-start">
-                  <p className="pt-3 pb-1">Password requirements:</p>
-                  <ul className="list-disc list-insid flex flex-col items-start ml-4">
-                    <li
-                      className={/[A-Z]/.test(password) ? "text-green-400" : ""}
-                    >
-                      At least one uppercase letter
-                    </li>
-                    <li
-                      className={/[a-z]/.test(password) ? "text-green-400" : ""}
-                    >
-                      At least one lowercase letter
-                    </li>
-                    <li className={/\d/.test(password) ? "text-green-400" : ""}>
-                      At least one number
-                    </li>
-                    <li
-                      className={
-                        /[^A-Za-z0-9]/.test(password) ? "text-green-400" : ""
-                      }
-                    >
-                      At least one special character
-                    </li>
-                    <li
-                      className={password.length >= 8 ? "text-green-400" : ""}
-                    >
-                      Minimum 8 characters
-                    </li>
-                  </ul>
-                </div>
+                <PasswordChecklist password={password} />
               </div>
 
               <div>
@@ -244,6 +220,7 @@ export default function CreateWallet({
                     size="sm"
                     onClick={handleCopySeed}
                     className="text-blue-400 hover:text-blue-300 hover:bg-gray-700"
+                    aria-label={copiedSeed ? "copied" : "copy seed phrase"}
                   >
                     {copiedSeed ? (
                       <Check className="w-4 h-4" />

@@ -9,6 +9,7 @@ import { Keyring } from "@polkadot/keyring";
 import { mnemonicValidate } from "@polkadot/util-crypto";
 import { hashPassword } from "@/utils/password";
 import { setToStorage } from "@/utils/storage";
+import { PasswordChecklist } from "@/components/PasswordCheck";
 
 interface ImportWalletProps {
   onBack: () => void;
@@ -31,11 +32,12 @@ export default function ImportWallet({
   const [blurred, setBlurred] = useState(false);
 
   const handleImport = async () => {
+    console.log(">>>>>>>>>");
     setError(null);
-
     const trimmedSeed = seedPhrase.trim().toLowerCase();
     const words = trimmedSeed.split(/\s+/);
 
+    console.log(">>>>>>>>>", words.length);
     if (words.length !== 12 && words.length !== 24) {
       setError("Seed phrase must be 12 or 24 words.");
       return;
@@ -54,15 +56,12 @@ export default function ImportWallet({
     setLoading(true);
 
     try {
-      // Generate keypair from mnemonic
       const keyring = new Keyring({ type: "sr25519", ss58Format: 42 });
       const pair = keyring.addFromUri(trimmedSeed);
 
-      // Hash and store password securely
       const hashed = await hashPassword(password);
       await setToStorage("walletPassword", hashed);
 
-      // Send wallet info to parent
       onWalletImported({
         address: pair.address,
         seedPhrase: trimmedSeed,
@@ -91,6 +90,7 @@ export default function ImportWallet({
           onClick={onBack}
           className="text-gray-400 hover:text-white hover:bg-gray-800"
           disabled={loading}
+          aria-label="back"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
@@ -121,6 +121,7 @@ export default function ImportWallet({
                   size="icon"
                   className="text-gray-400 hover:text-white"
                   onClick={() => setBlurred(!blurred)}
+                  aria-label={blurred ? "show seed phrase" : "hide seed phrase"}
                 >
                   {blurred ? (
                     <Eye className="w-4 h-4" />
@@ -145,6 +146,7 @@ export default function ImportWallet({
                 }`}
                 placeholder="Enter your 12 or 24 word seed phrase separated by spaces"
                 disabled={loading}
+                aria-label="seed phrase"
               />
 
               <p className="text-gray-500 text-xs mt-1">
@@ -166,6 +168,7 @@ export default function ImportWallet({
                   className="bg-gray-800 border-gray-700 text-white pr-10 text-sm"
                   placeholder="Create a new password (min 8 characters)"
                   disabled={loading}
+                  aria-label="new password"
                 />
                 <Button
                   type="button"
@@ -174,6 +177,7 @@ export default function ImportWallet({
                   className="absolute right-1 top-1/4 w-4 h-4 text-gray-400 hover:text-white"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={loading}
+                  aria-label={showPassword ? "hide password" : "show password"}
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -183,35 +187,7 @@ export default function ImportWallet({
                 </Button>
               </div>
 
-              {/* PASSWORD REQUIREMENTS CHECKLIST */}
-              <div className="text-xs text-gray-400 mt-2 space-y-1 flex flex-col items-start">
-                <p>Password requirements:</p>
-                <ul className="list-disc list-inside ml-4 items-start flex flex-col">
-                  <li
-                    className={/[A-Z]/.test(password) ? "text-green-400" : ""}
-                  >
-                    At least one uppercase letter
-                  </li>
-                  <li
-                    className={/[a-z]/.test(password) ? "text-green-400" : ""}
-                  >
-                    At least one lowercase letter
-                  </li>
-                  <li className={/\d/.test(password) ? "text-green-400" : ""}>
-                    At least one number
-                  </li>
-                  <li
-                    className={
-                      /[^A-Za-z0-9]/.test(password) ? "text-green-400" : ""
-                    }
-                  >
-                    At least one special character
-                  </li>
-                  <li className={password.length >= 8 ? "text-green-400" : ""}>
-                    Minimum 8 characters
-                  </li>
-                </ul>
-              </div>
+              <PasswordChecklist password={password} />
             </div>
           </div>
 
@@ -232,6 +208,7 @@ export default function ImportWallet({
               loading
             }
             className="w-full"
+            aria-label="import wallet"
           >
             {loading ? "Importing..." : "Import Wallet"}
           </Button>

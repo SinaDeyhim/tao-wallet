@@ -30,7 +30,6 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
 
   const loading = balanceLoading || priceLoading;
 
-  // Fetch TAO balance from chain
   useEffect(() => {
     if (!walletData?.address) return;
 
@@ -47,10 +46,8 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
           walletData?.address
         );
         const free = balanceData.free.toBigInt();
-
         const decimals = 9n;
         const divisor = 10n ** decimals;
-
         const whole = free / divisor;
         const fraction = free % divisor;
         const fractionStr = fraction
@@ -74,7 +71,6 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
     };
   }, [walletData?.address]);
 
-  // Fetch TAO price
   useEffect(() => {
     async function fetchPrice() {
       try {
@@ -149,6 +145,8 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
               variant="ghost"
               size="sm"
               onClick={copyAddress}
+              aria-label="copy address"
+              data-testid="copy-address-button"
               className="text-gray-400 hover:text-white hover:bg-gray-800 text-xs"
             >
               {walletData?.address.slice(0, 6)}...
@@ -166,20 +164,14 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
             <>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <h2 className="text-3xl font-bold text-white">
-                  {showBalance ? (
-                    balance !== null ? (
-                      `${balance} TAO`
-                    ) : (
-                      <Skeleton className="h-8 w-40 rounded bg-gray-700" />
-                    )
-                  ) : (
-                    "•••••••••"
-                  )}
+                  {showBalance ? balance ?? "0.00 TAO" : "•••••••••"}
                 </h2>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowBalance(!showBalance)}
+                  aria-label={showBalance ? "hide balance" : "show balance"}
+                  data-testid="toggle-balance"
                   className="text-gray-400 hover:text-white w-8 h-8"
                 >
                   {showBalance ? (
@@ -190,15 +182,7 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
                 </Button>
               </div>
               <p className="text-gray-400 text-sm">
-                {showBalance ? (
-                  usdValueStr !== null ? (
-                    usdValueStr
-                  ) : (
-                    <Skeleton className="h-4 w-20 rounded bg-gray-700" />
-                  )
-                ) : (
-                  "••••••"
-                )}
+                {showBalance ? usdValueStr ?? "0.00" : "••••••"}
               </p>
             </>
           )}
@@ -218,23 +202,25 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
         <div className="flex border-b border-gray-800">
           <Button
             variant="ghost"
+            onClick={() => setActiveTab("assets")}
+            data-testid="tab-assets"
             className={`flex-1 py-3 rounded-none ${
               activeTab === "assets"
                 ? "text-blue-400 border-b-2 border-blue-400"
                 : "text-gray-400 hover:text-white"
             }`}
-            onClick={() => setActiveTab("assets")}
           >
             Assets
           </Button>
           <Button
             variant="ghost"
+            onClick={() => setActiveTab("transactions")}
+            data-testid="tab-transactions"
             className={`flex-1 py-3 rounded-none ${
               activeTab === "transactions"
                 ? "text-blue-400 border-b-2 border-blue-400"
                 : "text-gray-400 hover:text-white"
             }`}
-            onClick={() => setActiveTab("transactions")}
           >
             Transactions
           </Button>
@@ -242,41 +228,29 @@ export default function WalletDashboard({ walletData }: WalletDashboardProps) {
 
         <div className="p-4">
           {activeTab === "assets" && (
-            <div className="space-y-3">
-              <Card className="bg-gray-800 border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">
-                          TAO
-                        </span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-white">TAO</h3>
-                        <p className="text-gray-400 text-sm">TAO</p>
-                      </div>
+            <Card className="bg-gray-800 border-gray-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">TAO</span>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-white">
-                        {loading ? (
-                          <Skeleton className="h-5 w-20 bg-gray-700 mb-1" />
-                        ) : (
-                          `${balance} TAO`
-                        )}
-                      </p>
-                      <p className="text-gray-400 text-sm">
-                        {loading ? (
-                          <Skeleton className="h-4 w-20 bg-gray-700" />
-                        ) : (
-                          usdValueStr
-                        )}
-                      </p>
+                    <div>
+                      <h3 className="font-semibold text-white">TAO</h3>
+                      <p className="text-gray-400 text-sm">TAO</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-white">
+                      {balance ?? "0.00"} TAO
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      {usdValueStr ?? "$0.00"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {activeTab === "transactions" && (
