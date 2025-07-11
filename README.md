@@ -34,6 +34,8 @@ This is a demo app for creating or importing a TAO wallet on the Bittensor netwo
 
 ### Recordings
 [Create Wallet (Seed phrase shown for demo purposes — this is a burn wallet)](https://drive.google.com/file/d/1p_SQ7OEPEu-92HvFNKysco59_moVwumB/view?usp=drive_link)
+
+
 [Import Wallet](https://drive.google.com/file/d/1nK6Sk9KWepY9J9ZjtzaVlWRvX0nUsVCa/view?usp=drive_link)
 
 ### Landing Page
