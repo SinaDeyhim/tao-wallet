@@ -32,6 +32,29 @@ This is a demo app for creating or importing a TAO wallet on the Bittensor netwo
 
 ## 💅 UI Screenshots
 
+### Landing Page
+<img width="377" height="605" alt="Screenshot 2025-07-11 at 9 02 25 AM" src="https://github.com/user-attachments/assets/50add583-65f6-49be-a3a3-75c281ca562e" />
+
+
+### Create Wallet
+<img width="382" height="607" alt="Screenshot 2025-07-11 at 9 02 35 AM" src="https://github.com/user-attachments/assets/b0254755-e4bf-4199-b771-8f55bb3c09cd" />
+
+
+### Import Wallet
+<img width="372" height="553" alt="Screenshot 2025-07-11 at 9 02 57 AM" src="https://github.com/user-attachments/assets/184e6a95-05fc-4ef2-8430-d566ff97e1b5" />
+<img width="375" height="552" alt="Screenshot 2025-07-11 at 9 03 17 AM" src="https://github.com/user-attachments/assets/9a2a68ba-2806-43fc-9848-04916febf842" />
+
+
+### Wallet Dashboard
+<img width="375" height="604" alt="Screenshot 2025-07-11 at 9 03 27 AM" src="https://github.com/user-attachments/assets/eaabe05a-588f-4023-9fc6-11f0ba853175" />
+
+### Locked Screen
+<img width="373" height="602" alt="Screenshot 2025-07-11 at 9 03 36 AM" src="https://github.com/user-attachments/assets/3475c3d3-f088-4eee-b008-c6f1105c6f83" />
+
+
+
+
+
 
 
 ## 📖  Instructions 
